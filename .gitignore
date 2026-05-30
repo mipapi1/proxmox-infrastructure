@@ -1,29 +1,35 @@
-# SSH keys
-id_ed25519.pub
-!id_ed25519.pub.example
+# SSH private keys — never commit these
+id_rsa
+id_dsa
+id_ecdsa
+id_ecdsa_sk
+id_ed25519
 *.pem
 *.key
 
-# Terraform state files
+# SSH public key used by Terraform — copy locally before running, do not commit
+id_ed25519.pub
+!id_ed25519.pub.example
+
+# Terraform state — contains sensitive resource data
 *.tfstate
 *.tfstate.backup
 crash.log
 
-# Terraform lock and plan files
-.terraform.lock.hcl
+# Terraform plan files — can contain sensitive values
 *.tfplan
 
-# Terraform variable files
-*.tfvars       # Ignore real variable files containing secrets
-!*.tfvars.example  # Allow example/template versions
+# Terraform variable files — contain secrets
+*.tfvars
+!*.tfvars.example
 
-# Override files (custom local settings)
+# Override files
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
 
-# Terraform directories
+# Terraform working directory and provider cache
 .terraform/
 
 # CLI configuration files
@@ -36,8 +42,10 @@ terraform.rc
 *.swp
 *~
 
-# MacOS files
+# OS files
 .DS_Store
 
-# Linux files
-*.lock
+# Environment files
+.env
+.env.*
+!.env.example
