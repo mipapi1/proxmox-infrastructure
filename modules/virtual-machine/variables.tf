@@ -2,10 +2,10 @@
 /// Cloud-Init Variables ///
 ////////////////////////////
 
-variable "cloud_init_image_checksum" { 
+variable "cloud_init_image_checksum" {
   description = "The checksum of the cloud-init image to use"
   type        = string
-  default = "2b5f90ffe8180def601c021c874e55d8303e8bcbfc66fee2b94414f43ac5eb1f"
+  default     = "2b5f90ffe8180def601c021c874e55d8303e8bcbfc66fee2b94414f43ac5eb1f"
 }
 
 variable "cloud_init_image_file_name" {
@@ -17,7 +17,7 @@ variable "cloud_init_image_file_name" {
 variable "cloud_init_image_url" {
   description = "The URL of the cloud-init image to use"
   type        = string
-  default = "https://cloud-images.ubuntu.com/noble/20251213/noble-server-cloudimg-amd64.img"
+  default     = "https://cloud-images.ubuntu.com/noble/20251213/noble-server-cloudimg-amd64.img"
 }
 
 /////////////////////////////////
@@ -28,6 +28,12 @@ variable "bridge" {
   description = "Network bridge for VM"
   type        = string
   default     = "vmbr0"
+}
+
+variable "vlan_id" {
+  description = "VLAN tag for the VM network interface. null means no VLAN tagging."
+  type        = number
+  default     = null
 }
 
 variable "cloud_init_datastore_id" {
@@ -68,7 +74,7 @@ variable "disk_size" {
 variable "gateway" {
   description = "IPv4 gateway for VM"
   type        = string
-  default     = "192.168.1.1"
+  default     = "10.0.20.1"
 }
 
 variable "ip" {
@@ -93,8 +99,9 @@ variable "node_name" {
 }
 
 variable "template_vm_id" {
-  description = "The VM ID of the template to clone from"
+  description = "The VM ID of the template to clone from. 0 means use cloud image download instead."
   type        = number
+  default     = 0
 }
 
 variable "vcpu" {
@@ -106,5 +113,33 @@ variable "vcpu" {
 variable "vm_datastore_id" {
   description = "Datastore to use for VM disks"
   type        = string
-  default     = "rpool"  
+  default     = "rpool"
+}
+
+////////////////////
+/// SSH Variables ///
+////////////////////
+
+variable "ssh_username" {
+  description = "Primary admin username to create via cloud-init."
+  type        = string
+  default     = "papi"
+}
+
+variable "ssh_public_key_path" {
+  description = "Path to the SSH public key file to authorize for the primary admin user."
+  type        = string
+  default     = "./id_ed25519.pub"
+}
+
+variable "ssh_additional_users" {
+  description = "Additional cloud-init users beyond the primary admin. Provide SSH keys as strings."
+  type = list(object({
+    name                = string
+    groups              = optional(list(string), ["sudo"])
+    shell               = optional(string, "/bin/bash")
+    ssh_authorized_keys = list(string)
+    sudo                = optional(string, "ALL=(ALL) NOPASSWD:ALL")
+  }))
+  default = []
 }
