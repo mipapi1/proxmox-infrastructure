@@ -1,11 +1,29 @@
 data "local_file" "ssh_public_key" {
-  filename = "./id_ed25519.pub"
+  filename = var.ssh_public_key_path
+}
+
+locals {
+  additional_users_yaml = join("\n", [
+    for user in var.ssh_additional_users : join("\n", concat(
+      ["  - name: ${user.name}"],
+      length(user.groups) > 0 ? concat(
+        ["    groups:"],
+        [for g in user.groups : "      - ${g}"]
+      ) : ["    groups: []"],
+      ["    shell: ${user.shell}"],
+      length(user.ssh_authorized_keys) > 0 ? concat(
+        ["    ssh_authorized_keys:"],
+        [for k in user.ssh_authorized_keys : "      - ${k}"]
+      ) : ["    ssh_authorized_keys: []"],
+      ["    sudo: '${user.sudo}'"]
+    ))
+  ])
 }
 
 # Cloud-init user-data file (must use file-based datastore, e.g., 'local')
 resource "proxmox_virtual_environment_file" "cloud_config" {
   content_type = "snippets"
-  datastore_id = var.cloud_init_datastore_id     
+  datastore_id = var.cloud_init_datastore_id
   node_name    = var.node_name
 
   source_raw {
@@ -15,7 +33,7 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
     timezone: America/New_York
     users:
       - default
-      - name: papi
+      - name: ${var.ssh_username}
         groups:
           - sudo
           - _ssh
@@ -23,6 +41,7 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
         ssh_authorized_keys:
           - ${trimspace(data.local_file.ssh_public_key.content)}
         sudo: ALL=(ALL) NOPASSWD:ALL
+    ${local.additional_users_yaml}
     package_update: true
     packages:
       - qemu-guest-agent
@@ -40,11 +59,11 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
 
 # Download Cloud Image
 resource "proxmox_virtual_environment_download_file" "cloud_image" {
-  content_type = "import"
-  datastore_id = var.cloud_init_datastore_id         
-  node_name    = var.node_name
-  url          = var.cloud_init_image_url
+  content_type       = "import"
+  datastore_id       = var.cloud_init_datastore_id
+  node_name          = var.node_name
+  url                = var.cloud_init_image_url
   checksum_algorithm = "sha256"
-  checksum     = var.cloud_init_image_checksum
-  file_name    = var.cloud_init_image_file_name
+  checksum           = var.cloud_init_image_checksum
+  file_name          = var.cloud_init_image_file_name
 }

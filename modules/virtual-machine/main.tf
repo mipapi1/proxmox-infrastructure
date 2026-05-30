@@ -51,7 +51,8 @@ resource "proxmox_virtual_environment_vm" "virtual_machine" {
   }
 
   network_device {
-    bridge = var.bridge
+    bridge  = var.bridge
+    vlan_id = var.vlan_id
   }
 }
 
