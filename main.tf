@@ -17,10 +17,7 @@ module "virtual_machines" {
   # Network
   vlan_id = lookup(each.value, "vlan_id", null)
 
-  # SSH / cloud-init users
-  ssh_username         = lookup(each.value, "ssh_username", "papi")
-  ssh_public_key_path  = lookup(each.value, "ssh_public_key_path", "./id_ed25519.pub")
-  ssh_additional_users = lookup(each.value, "ssh_additional_users", [])
+  ssh_public_keys = var.ssh_public_keys
 
   template_vm_id = lookup(each.value, "template_vm_id", 0)
 }

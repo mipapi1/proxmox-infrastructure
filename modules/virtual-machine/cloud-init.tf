@@ -1,25 +1,3 @@
-data "local_file" "ssh_public_key" {
-  filename = var.ssh_public_key_path
-}
-
-locals {
-  additional_users_yaml = join("\n", [
-    for user in var.ssh_additional_users : join("\n", concat(
-      ["  - name: ${user.name}"],
-      length(user.groups) > 0 ? concat(
-        ["    groups:"],
-        [for g in user.groups : "      - ${g}"]
-      ) : ["    groups: []"],
-      ["    shell: ${user.shell}"],
-      length(user.ssh_authorized_keys) > 0 ? concat(
-        ["    ssh_authorized_keys:"],
-        [for k in user.ssh_authorized_keys : "      - ${k}"]
-      ) : ["    ssh_authorized_keys: []"],
-      ["    sudo: '${user.sudo}'"]
-    ))
-  ])
-}
-
 # Cloud-init user-data file (must use file-based datastore, e.g., 'local')
 resource "proxmox_virtual_environment_file" "cloud_config" {
   content_type = "snippets"
@@ -28,20 +6,21 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
 
   source_raw {
     data = <<-EOF
-    #cloud-config
+#cloud-config
     hostname: ${var.name}
     timezone: America/New_York
     users:
       - default
-      - name: ${var.ssh_username}
+      - name: papi
         groups:
           - sudo
           - _ssh
         shell: /bin/bash
         ssh_authorized_keys:
-          - ${trimspace(data.local_file.ssh_public_key.content)}
+%{ for key in var.ssh_public_keys ~}
+          - ${trimspace(key)}
+%{ endfor ~}
         sudo: ALL=(ALL) NOPASSWD:ALL
-    ${local.additional_users_yaml}
     package_update: true
     packages:
       - qemu-guest-agent
@@ -53,7 +32,7 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
       - echo "done" > /tmp/cloud-config.done
     EOF
 
-    file_name = "user-data-cloud-config.yaml"
+    file_name = "user-data-${var.name}.yaml"
   }
 }
 
