@@ -120,26 +120,8 @@ variable "vm_datastore_id" {
 /// SSH Variables ///
 ////////////////////
 
-variable "ssh_username" {
-  description = "Primary admin username to create via cloud-init."
-  type        = string
-  default     = "papi"
-}
-
-variable "ssh_public_key_path" {
-  description = "Path to the SSH public key file to authorize for the primary admin user."
-  type        = string
-  default     = "./id_ed25519.pub"
-}
-
-variable "ssh_additional_users" {
-  description = "Additional cloud-init users beyond the primary admin. Provide SSH keys as strings."
-  type = list(object({
-    name                = string
-    groups              = optional(list(string), ["sudo"])
-    shell               = optional(string, "/bin/bash")
-    ssh_authorized_keys = list(string)
-    sudo                = optional(string, "ALL=(ALL) NOPASSWD:ALL")
-  }))
-  default = []
+variable "ssh_public_keys" {
+  description = "List of SSH public keys to add to the papi user"
+  type        = list(string)
+  default     = []
 }
