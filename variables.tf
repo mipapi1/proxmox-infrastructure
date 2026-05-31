@@ -19,3 +19,9 @@ variable "vms" {
   type        = map(any)
   description = "List of virtual machines to be deployed"
 }
+
+variable "ssh_public_keys" {
+  description = "List of SSH public keys allowed to connect to VMs"
+  type        = list(string)
+  default     = []
+}
