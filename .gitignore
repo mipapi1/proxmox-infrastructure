@@ -16,6 +16,9 @@ id_ed25519.pub
 *.tfstate.backup
 crash.log
 
+# Terraform debug logs (TF_LOG) — can contain API tokens
+terraform.log
+
 # Terraform plan files — can contain sensitive values
 *.tfplan
 

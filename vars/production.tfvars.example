@@ -1,33 +1,24 @@
-proxmox_api_url      = "https://your-proxmox-host:8006/api2/json"
-proxmox_api_token_id = "user@pve!token-name=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-pm_tls_insecure      = true
+proxmox_api_url = "https://your-proxmox-host:8006/api2/json"
+pm_tls_insecure = true
+
+# proxmox_api_token_id is NOT set here — ./tf.sh pulls it from Vault
+# (secret/proxmox/terraform, key api-token) and passes it as TF_VAR_proxmox_api_token_id.
+
+ssh_public_keys = [
+  "ssh-ed25519 AAAA... user@host",
+]
 
 vms = {
-  # ---------------------------------------------------------------
-  # Single VM — downloads Ubuntu Noble cloud image, no template
-  # ---------------------------------------------------------------
-  vault = {
-    name      = "vault-prod01"
-    node_name = "proxmox03"
-    ip        = "10.0.20.36/24"
-    vcpu      = 1
-    memory    = 2048
-    disk_size = 64
+  k3s01 = {
+    name           = "k3s-prod01"
+    node_name      = "proxmox01"
+    ip             = "10.0.20.11/24"
+    vcpu           = 4
+    memory         = 8192
+    disk_size      = 100
+    template_vm_id = 9000
 
-    # Network — VLAN tag (omit for untagged)
-    vlan_id = 20
-
-    # SSH — primary admin user (defaults: ssh_username="papi", ssh_public_key_path="./id_ed25519.pub")
-    # ssh_username        = "papi"
-    # ssh_public_key_path = "./id_ed25519.pub"
-
-    # Optional: additional users with keys provided as strings
-    # ssh_additional_users = [
-    #   {
-    #     name                = "ansible"
-    #     groups              = ["sudo"]
-    #     ssh_authorized_keys = ["ssh-ed25519 AAAA... ansible@host"]
-    #   }
-    # ]
+    # Optional — VLAN tag, defaults to 20
+    # vlan_id = 20
   }
 }

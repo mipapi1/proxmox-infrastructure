@@ -1,11 +1,12 @@
-# Cloud-init user-data file (must use file-based datastore, e.g., 'local')
+# Cloud-init user-data file (must use file-based datastore, e.g., 'local').
+# qemu-guest-agent is baked into the template, so no package installs here.
 resource "proxmox_virtual_environment_file" "cloud_config" {
   content_type = "snippets"
   datastore_id = var.cloud_init_datastore_id
   node_name    = var.node_name
 
   source_raw {
-    data = <<-EOF
+    data      = <<-EOF
 #cloud-config
     hostname: ${var.name}
     timezone: America/New_York
@@ -17,32 +18,13 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
           - _ssh
         shell: /bin/bash
         ssh_authorized_keys:
-%{ for key in var.ssh_public_keys ~}
+%{for key in var.ssh_public_keys~}
           - ${trimspace(key)}
-%{ endfor ~}
+%{endfor~}
         sudo: ALL=(ALL) NOPASSWD:ALL
-    package_update: true
-    packages:
-      - qemu-guest-agent
-      - net-tools
-      - curl
     runcmd:
-      - systemctl enable qemu-guest-agent
-      - systemctl start qemu-guest-agent
       - echo "done" > /tmp/cloud-config.done
     EOF
-
     file_name = "user-data-${var.name}.yaml"
   }
-}
-
-# Download Cloud Image
-resource "proxmox_virtual_environment_download_file" "cloud_image" {
-  content_type       = "import"
-  datastore_id       = var.cloud_init_datastore_id
-  node_name          = var.node_name
-  url                = var.cloud_init_image_url
-  checksum_algorithm = "sha256"
-  checksum           = var.cloud_init_image_checksum
-  file_name          = var.cloud_init_image_file_name
 }
