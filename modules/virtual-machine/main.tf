@@ -15,6 +15,12 @@ resource "proxmox_virtual_environment_vm" "virtual_machine" {
   name      = var.name
   node_name = var.node_name
 
+  # Never restart a running VM from Terraform. Changes that need a restart (memory,
+  # CPU, ...) stay pending in Proxmox until the VM is restarted, which is done node by
+  # node (see README: "Changes that need a VM restart"). With the provider default
+  # (true), one apply restarted every changed VM at once: all k3s nodes together.
+  reboot_after_update = false
+
   clone {
     vm_id     = var.template_vm_id
     node_name = "proxmox01"

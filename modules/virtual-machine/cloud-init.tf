@@ -27,4 +27,12 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
     EOF
     file_name = "user-data-${var.name}.yaml"
   }
+
+  # cloud-init only runs on a VM's first boot. Without this, any later edit here (e.g.
+  # an SSH key) replaces the snippet, which forces Terraform to destroy and recreate
+  # the VM. New VMs still get the current content; keys on existing VMs are changed
+  # on the VMs themselves (Ansible), not here.
+  lifecycle {
+    ignore_changes = [source_raw]
+  }
 }

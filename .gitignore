@@ -22,9 +22,11 @@ terraform.log
 # Terraform plan files — can contain sensitive values
 *.tfplan
 
-# Terraform variable files — contain secrets
+# Terraform variable files: ignored by default in case one ever holds a secret.
+# vars/production.tfvars is tracked on purpose: it holds no secrets (the Proxmox API
+# token comes from Vault via tf.sh) and must stay that way.
 *.tfvars
-!*.tfvars.example
+!vars/production.tfvars
 
 # Override files
 override.tf
